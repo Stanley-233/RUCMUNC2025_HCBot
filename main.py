@@ -1,18 +1,10 @@
-from dotenv import load_dotenv
-import os
-import requests
+# 使用方法
+from utils.Api import Api
+from datetime import datetime
 
-# 加载 .env 文件
-load_dotenv()
-
-# 读取配置
-api_url = os.getenv("API_URL")
-headers = {"Content-Type": "application/json"}
-
-data = {
-    "msgtype": "markdown",
-    "markdown": {"content": "🙏🙏🇪🇸💪💪"}
-}
-
-response = requests.post(api_url, headers=headers, json=data)
-print(response.text)
+current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+message = f"⏰ 当前时间: {current_time}"
+result = Api.post_md_message(message)
+if result:
+    print(f"发送成功，状态码: {result.status_code}")
+    print(f"响应内容: {result.text}")
