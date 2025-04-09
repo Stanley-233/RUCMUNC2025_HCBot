@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 import requests
-import json
 
 class Api:  # 类名建议使用大写开头的驼峰命名
     def __init__(self):
