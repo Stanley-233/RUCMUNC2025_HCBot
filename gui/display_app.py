@@ -1,4 +1,3 @@
-import os
 import sys
 
 from PySide6.QtGui import QFont
@@ -69,8 +68,8 @@ class DisplayApp(QApplication):
         self.layout.addLayout(button_layout)
 
         # 定时器设置
-        self.deamonTimer = QTimer()
-        self.deamonTimer.timeout.connect(self.update_current_time)
+        self.daemon_timer = QTimer()
+        self.daemon_timer.timeout.connect(self.update_current_time)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_time)
         self.start_button.clicked.connect(self.start_time_flow)
@@ -82,7 +81,7 @@ class DisplayApp(QApplication):
 
         self.update_current_time()
         self.window.show()
-        self.deamonTimer.start(1000)  # 每秒更新
+        self.daemon_timer.start(1000)  # 每秒更新
 
     def update_current_time(self):
         current_time = QTime.currentTime()
@@ -92,9 +91,9 @@ class DisplayApp(QApplication):
         if self.running:
             self.elapsed_time += 1
             self.elapsed_time_label.setText(f"已流逝时间: {self.elapsed_time}s")
-            self.dimension_time = MunCalculator.updateTime(self.dimension_time,
-                                                           elapsed=self.elapsed_time,
-                                                           dimension_ratio=int(self.time_scale_input.text()))
+            self.dimension_time = MunCalculator.update_time(self.dimension_time,
+                                                            elapsed=self.elapsed_time,
+                                                            dimension_ratio=int(self.time_scale_input.text()))
             self.meeting_dimension_time_label.setText("会议次元时间: " + self.dimension_time.toString("yyyy年MM月dd日 HH:mm:ss"))
             # 计算阶段与回合
             turn_elapsed_time = self.elapsed_time % (30*60)
