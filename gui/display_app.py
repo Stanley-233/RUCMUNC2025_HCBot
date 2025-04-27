@@ -1,37 +1,52 @@
+import os
 import sys
+
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,
     QVBoxLayout,
     QLabel,
-    QSpinBox,
     QPushButton,
-    QHBoxLayout, QLineEdit,
+    QHBoxLayout,
+    QLineEdit
 )
 from PySide6.QtCore import QTimer, QTime, QDateTime
+
 from utils.mun_calculation import MunCalculator
 
 class DisplayApp(QApplication):
     def __init__(self):
         super().__init__(sys.argv)
+
+        # Logic
+        self.current_session = 1
+        self.current_turn = 0
+        # 0开始，1行动提交，2行动推演，3支援指令，4支援推演
+        self.current_sub_turn = 0
+        self.dimension_time = QDateTime(1936,5,9,0,0,0)
+
         self.window = QWidget()
         self.window.setWindowTitle("RUC时间轴计算广播系统")
 
         self.layout = QVBoxLayout()
         self.window.setLayout(self.layout)
 
-        self.dimension_time = QDateTime(1936,5,9,0,0,0)
-
         # 显示区
+        # 设置全局字体
+        font = QFont()
+        font.setPointSize(14)  # 设置字号为 24
+        QApplication.setFont(font)
+
         self.current_time_label = QLabel("当前时间: ")
         self.meeting_dimension_time_label = QLabel("会议次元时间: " + self.dimension_time.toString("yyyy年MM月dd日 HH:mm:ss"))
-        self.current_round_label = QLabel("当前回合: ")
+        self.current_turn_label = QLabel("当前回合: ")
         self.current_phase_label = QLabel("当前阶段: ")
         self.elapsed_time_label = QLabel("已流逝时间: 0s")
 
         self.layout.addWidget(self.current_time_label)
         self.layout.addWidget(self.meeting_dimension_time_label)
-        self.layout.addWidget(self.current_round_label)
+        self.layout.addWidget(self.current_turn_label)
         self.layout.addWidget(self.current_phase_label)
         self.layout.addWidget(self.elapsed_time_label)
 
@@ -62,7 +77,7 @@ class DisplayApp(QApplication):
         self.pause_button.clicked.connect(self.pause_time_flow)
 
         # 初始化时间
-        self.elapsed_time = 0
+        self.elapsed_time = -1
         self.running = False
 
         self.update_current_time()
@@ -81,6 +96,32 @@ class DisplayApp(QApplication):
                                                            elapsed=self.elapsed_time,
                                                            dimension_ratio=int(self.time_scale_input.text()))
             self.meeting_dimension_time_label.setText("会议次元时间: " + self.dimension_time.toString("yyyy年MM月dd日 HH:mm:ss"))
+            # 计算阶段与回合
+            turn_elapsed_time = self.elapsed_time % (30*60)
+            if turn_elapsed_time == 0*60:
+                self.current_sub_turn = 0
+                self.current_turn += 1
+                self.current_turn_label.setText(f"当前回合：{self.current_turn}")
+            elif turn_elapsed_time == 10*60:
+                self.current_sub_turn = 1
+            elif turn_elapsed_time == 15*60:
+                self.current_sub_turn = 2
+            elif turn_elapsed_time == 20*60:
+                self.current_sub_turn = 3
+            elif turn_elapsed_time == 23*60:
+                self.current_sub_turn = 4
+            match self.current_sub_turn:
+                case 0:
+                    self.current_phase_label.setText("当前阶段：指令筹备")
+                case 1:
+                    self.current_phase_label.setText("当前阶段：行动指令窗口")
+                case 2:
+                    self.current_phase_label.setText("当前阶段：行动结束")
+                case 3:
+                    self.current_phase_label.setText("当前阶段：支援指令窗口")
+                case 4:
+                    self.current_phase_label.setText("当前阶段：支援结束")
+
 
     def start_time_flow(self):
         if not self.running:
@@ -96,7 +137,3 @@ class DisplayApp(QApplication):
     def closeAllWindows():
         super().closeAllWindows()
         sys.exit(0)
-
-if __name__ == "__main__":
-    app = DisplayApp()
-    sys.exit(app.exec())
