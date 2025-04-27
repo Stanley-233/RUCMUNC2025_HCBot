@@ -2,3 +2,4 @@
 ruc.env
 *.env
 *.env
+*.pyc
