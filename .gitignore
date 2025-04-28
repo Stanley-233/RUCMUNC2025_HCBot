@@ -5,3 +5,4 @@ ruc.env
 dist/
 build/
 main.spec
+*.toml

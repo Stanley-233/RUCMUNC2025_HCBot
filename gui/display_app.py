@@ -1,6 +1,7 @@
 import sys
 
-from PySide6.QtGui import QFont
+import toml
+from PySide6.QtGui import QFont, QAction
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,
@@ -8,7 +9,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QHBoxLayout,
-    QLineEdit
+    QLineEdit, QMenuBar
 )
 from PySide6.QtCore import QTimer, QTime, QDateTime
 
@@ -38,6 +39,25 @@ class DisplayApp(QApplication):
         font.setPointSize(14)  # 设置字号为 24
         QApplication.setFont(font)
 
+        # 创建菜单栏
+        self.menu_bar = QMenuBar(self.window)
+
+        # 文件菜单
+        file_menu = self.menu_bar.addMenu("文件")
+
+        # 保存动作
+        save_action = QAction("保存", self)
+        save_action.triggered.connect(self.save_file)
+        file_menu.addAction(save_action)
+
+        # 加载动作
+        load_action = QAction("加载", self)
+        load_action.triggered.connect(self.load_file)
+        file_menu.addAction(load_action)
+
+        self.layout.setMenuBar(self.menu_bar)
+
+        # Label
         self.current_time_label = QLabel("当前时间: ")
         self.meeting_dimension_time_label = QLabel("会议次元时间: " + self.dimension_time.toString("yyyy年MM月dd日 HH:mm:ss"))
         self.current_turn_label = QLabel("当前回合: ")
@@ -143,6 +163,31 @@ class DisplayApp(QApplication):
             self.timer.stop()
             WechatBot.post_pause_time(self.current_session, self.dimension_time)
 
+    def save_file(self):
+        config_data = {
+            "session": self.current_session,
+            "turn": self.current_turn,
+            "sub_turn": self.current_sub_turn,
+            "dimension_time": self.dimension_time.toString("yyyy-MM-dd HH:mm:ss")
+        }
+        with open("config.toml", "w") as config_file:
+            toml.dump(config_data, config_file)
+        print("配置已保存到 config.toml")
+
+    def load_file(self):
+        try:
+            with open("config.toml", "r") as config_file:
+                config_data = toml.load(config_file)
+                self.current_session = config_data["session"]
+                self.current_turn = config_data["turn"]
+                self.current_sub_turn = config_data["sub_turn"]
+                self.dimension_time = QDateTime.fromString(config_data["dimension_time"], "yyyy-MM-dd HH:mm:ss")
+                print("配置已加载")
+        except FileNotFoundError:
+            print("配置文件未找到")
+        except Exception as e:
+            print(f"加载配置时出错: {e}")
+
     @staticmethod
     def enable_wechat_button_clicked():
         WechatBot.enable = True
@@ -150,8 +195,3 @@ class DisplayApp(QApplication):
     @staticmethod
     def disable_wechat_button_clicked():
         WechatBot.enable = False
-
-    @staticmethod
-    def closeAllWindows():
-        super().closeAllWindows()
-        sys.exit(0)
