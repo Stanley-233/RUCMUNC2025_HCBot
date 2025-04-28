@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QTimer, QTime, QDateTime
 
 from utils.mun_calculation import MunCalculator
+from utils.wechat_bot import WechatBot
 
 class DisplayApp(QApplication):
     def __init__(self):
@@ -101,12 +102,16 @@ class DisplayApp(QApplication):
                 self.current_sub_turn = 0
                 self.current_turn += 1
                 self.current_turn_label.setText(f"当前回合：{self.current_turn}")
+                if self.elapsed_time != 0:
+                    WechatBot.post_time_update(self.current_sub_turn, self.current_session, self.current_turn, self.dimension_time)
             elif turn_elapsed_time == 10*60:
                 self.current_sub_turn = 1
+                WechatBot.post_time_update(self.current_sub_turn, self.current_session, self.current_turn, self.dimension_time)
             elif turn_elapsed_time == 15*60:
                 self.current_sub_turn = 2
             elif turn_elapsed_time == 20*60:
                 self.current_sub_turn = 3
+                WechatBot.post_time_update(self.current_sub_turn, self.current_session, self.current_turn, self.dimension_time)
             elif turn_elapsed_time == 23*60:
                 self.current_sub_turn = 4
             match self.current_sub_turn:
@@ -121,16 +126,17 @@ class DisplayApp(QApplication):
                 case 4:
                     self.current_phase_label.setText("当前阶段：支援结束")
 
-
     def start_time_flow(self):
         if not self.running:
             self.running = True
             self.timer.start(1000)  # 每秒更新
+            WechatBot.post_start_time(self.current_session, int(self.time_scale_input.text()), self.dimension_time)
 
     def pause_time_flow(self):
         if self.running:
             self.running = False
             self.timer.stop()
+            WechatBot.post_pause_time(self.current_session, self.dimension_time)
 
     @staticmethod
     def closeAllWindows():

@@ -29,6 +29,7 @@ class WechatBot:
                 json=data  # 直接使用json参数会自动序列化并设置Content-Type
             )
             response.raise_for_status()  # 如果响应状态码不是200，抛出异常
+            print(response.json())
             return response
         except requests.exceptions.RequestException as e:
             print(f"请求失败: {e}")
@@ -37,26 +38,54 @@ class WechatBot:
     @staticmethod
     def post_time_update(sub_phase_type: int, session: int, turn: int, time: QDateTime):
         load_dotenv("ruc.env")
-        timeStr = time.toString("yyyy年MM月dd日")
-        message = ""
+        timeStr = time.toString("yyyy年MM月dd日 hh:mm")
         match sub_phase_type:
             case 0:
-                message = f"时间更新信息：\n "
-                f"- 当前会期：第 {session} 会期"
-                f"- 当前回合：第 {turn} 个月"
-                f"- 当前时间：{timeStr}"
+                message = (
+                    f"## 时间更新\n "
+                    f"- 当前会期：第 {session} 会期\n"
+                    f"- 当前回合：第 {turn} 个月\n"
+                    f"- 会议次元时间：{timeStr}"
+                )
             case 1:
-                message =  f"时间更新信息：\n "
-                f"- 当前会期：第 {session} 会期"
-                f"- 当前回合：第 {turn} 个月"
-                f"- 当前时间：{timeStr}"
-                f"> <font color=\"comment\">注意</font>：现可提交**行动阶段指令**。"
+                message =  (
+                    f"## 时间更新\n "
+                    f"- 当前会期：第 {session} 会期\n"
+                    f"- 当前回合：第 {turn} 个月\n"
+                    f"- 会议次元时间：{timeStr}\n"
+                    f"> <font color=\"comment\">注意</font>：现可提交**行动阶段指令**。"
+                )
             case 3:
-                message =  f"时间更新信息：\n "
-                f"- 当前会期：第 {session} 会期"
-                f"- 当前回合：第 {turn} 个月"
-                f"- 当前时间：{timeStr}"
-                f"> <font color=\"comment\">注意</font>：现可提交**支援阶段指令**。"
+                message =  (
+                    f"## 时间更新\n "
+                    f"- 当前会期：第 {session} 会期\n"
+                    f"- 当前回合：第 {turn} 个月\n"
+                    f"- 会议次元时间：{timeStr}\n"
+                    f"> <font color=\"comment\">注意</font>：现可提交**支援阶段指令**。"
+                )
             case _:
                 print(f"错误：阶段类型错误")
+                return
+        WechatBot.post_md_message(message)
+
+    @staticmethod
+    def post_start_time(session: int, ratio: int, time: QDateTime):
+        timeStr = time.toString("yyyy年MM月dd日 hh:mm")
+        message = (
+            f"## 时间轴变动\n"
+            f"- 当前会期： {session} \n"
+            f"- 会议次元时间：{timeStr}\n"
+            f"> <font color=\"comment\">注意</font>：时间轴现已**开启**，当前时间流速 1:{ratio}"
+        )
+        WechatBot.post_md_message(message)
+
+    @staticmethod
+    def post_pause_time(session: int, time: QDateTime):
+        timeStr = time.toString("yyyy年MM月dd日 hh:mm")
+        message = (
+            f"## 时间轴变动\n"
+            f"- 当前会期： {session} \n"
+            f"- 会议次元时间：{timeStr}\n"
+            f"> <font color=\"comment\">注意</font>：时间轴现已**暂停**"
+        )
         WechatBot.post_md_message(message)
