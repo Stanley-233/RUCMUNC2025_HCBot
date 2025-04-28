@@ -1,5 +1,3 @@
-from cgitb import enable
-
 from PySide6.QtCore import QDateTime
 from dotenv import load_dotenv
 import os
@@ -17,8 +15,9 @@ class WechatBot:
             Response: requests库的响应对象
         """
 
-        if not enable:
+        if not WechatBot.enable:
             return "已禁用"
+
         load_dotenv("ruc.env")
 
         data = {
