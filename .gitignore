@@ -1,5 +1,7 @@
 .venv/
 ruc.env
 *.env
-*.env
 *.pyc
+dist/
+build/
+main.spec
