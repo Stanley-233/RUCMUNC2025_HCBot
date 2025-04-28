@@ -1,9 +1,12 @@
+from cgitb import enable
+
 from PySide6.QtCore import QDateTime
 from dotenv import load_dotenv
 import os
 import requests
 
 class WechatBot:
+    enable = True
     @staticmethod
     def post_md_message(message):
         """
@@ -13,6 +16,9 @@ class WechatBot:
         Returns:
             Response: requests库的响应对象
         """
+
+        if not enable:
+            return "已禁用"
         load_dotenv("ruc.env")
 
         data = {

@@ -63,8 +63,12 @@ class DisplayApp(QApplication):
         button_layout = QHBoxLayout()
         self.start_button = QPushButton("开始时间流动")
         self.pause_button = QPushButton("暂停时间流动")
+        self.enable_wechat_button = QPushButton("启用微信广播")
+        self.disable_wechat_button = QPushButton("禁用微信广播")
         button_layout.addWidget(self.start_button)
         button_layout.addWidget(self.pause_button)
+        button_layout.addWidget(self.enable_wechat_button)
+        button_layout.addWidget(self.disable_wechat_button)
 
         self.layout.addLayout(button_layout)
 
@@ -75,6 +79,8 @@ class DisplayApp(QApplication):
         self.timer.timeout.connect(self.update_time)
         self.start_button.clicked.connect(self.start_time_flow)
         self.pause_button.clicked.connect(self.pause_time_flow)
+        self.enable_wechat_button.clicked.connect(self.enable_wechat_button_clicked)
+        self.disable_wechat_button.clicked.connect(self.disable_wechat_button_clicked)
 
         # 初始化时间
         self.elapsed_time = -1
@@ -137,6 +143,14 @@ class DisplayApp(QApplication):
             self.running = False
             self.timer.stop()
             WechatBot.post_pause_time(self.current_session, self.dimension_time)
+
+    @staticmethod
+    def enable_wechat_button_clicked():
+        WechatBot.enable = True
+
+    @staticmethod
+    def disable_wechat_button_clicked():
+        WechatBot.enable = False
 
     @staticmethod
     def closeAllWindows():
