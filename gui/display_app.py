@@ -99,7 +99,6 @@ class DisplayApp(QApplication):
             self.elapsed_time += 1
             self.elapsed_time_label.setText(f"已流逝时间: {self.elapsed_time}s")
             self.dimension_time = MunCalculator.update_time(self.dimension_time,
-                                                            elapsed=self.elapsed_time,
                                                             dimension_ratio=int(self.time_scale_input.text()))
             self.meeting_dimension_time_label.setText("会议次元时间: " + self.dimension_time.toString("yyyy年MM月dd日 HH:mm:ss"))
             # 计算阶段与回合
